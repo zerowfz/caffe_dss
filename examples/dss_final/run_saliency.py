@@ -65,8 +65,8 @@ sal_iter_a = 0
 iter_size_test = 500
 iter_edge = 0
 solver.net.clear_param_diffs()
-test_net = caffe.Net('multi-2.prototxt','./vgg16.caffemodel',caffe.TEST)
-output_dir = './result/multi2/2/'
+test_net = caffe.Net('./prototxt/multi-2.prototxt','./vgg16.caffemodel',caffe.TEST)
+output_dir = './result/multi2/3/'
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
 
