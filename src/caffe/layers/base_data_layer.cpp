@@ -206,7 +206,8 @@ void BasePrefetchingLabelmapDataLayer<Dtype>::Forward_cpu(
   // Copy the labels.
   caffe_copy(batch->labelmap_.count(), batch->labelmap_.cpu_data(),
         top[1]->mutable_cpu_data());
-
+  //wfz
+  this->task_ = batch->task_;
   prefetch_free_.push(batch);
 }
 

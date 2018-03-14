@@ -1,5 +1,5 @@
 #include <vector>
-
+#include <iostream>
 #include "caffe/layers/sigmoid_cross_entropy_loss_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 

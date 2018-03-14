@@ -330,7 +330,8 @@ BOOST_PYTHON_MODULE(_caffe) {
         bp::with_custodian_and_ward<1, 2, bp::with_custodian_and_ward<1, 3> >())
     .def("save", &Net_Save)
     .def("save_hdf5", &Net_SaveHDF5)
-    .def("load_hdf5", &Net_LoadHDF5);
+    .def("load_hdf5", &Net_LoadHDF5)
+    .add_property("task",&Net<Dtype>::get_task);
   BP_REGISTER_SHARED_PTR_TO_PYTHON(Net<Dtype>);
 
   bp::class_<Blob<Dtype>, shared_ptr<Blob<Dtype> >, boost::noncopyable>(

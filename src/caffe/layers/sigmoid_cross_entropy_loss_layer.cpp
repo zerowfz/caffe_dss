@@ -92,6 +92,8 @@ void SigmoidCrossEntropyLossLayer<Dtype>::Forward_cpu(
     if (has_ignore_label_ && target_value == ignore_label_) {
       continue;
     }
+    //if(target[i]!=0)LOG(INFO)<<target[i];
+    //if(input_data[i]!=0)LOG(INFO)<<input_data[i];
     loss -= input_data[i] * (target[i] - (input_data[i] >= 0)) -
         log(1 + exp(input_data[i] - 2 * input_data[i] * (input_data[i] >= 0)));
     ++valid_count;

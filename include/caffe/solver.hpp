@@ -97,6 +97,7 @@ class Solver {
  protected:
   // Make and apply the update value for the current iteration.
   virtual void ApplyUpdate() = 0;
+  virtual void ApplyUpdate(int,int){};
   string SnapshotFilename(const string extension);
   string SnapshotToBinaryProto();
   string SnapshotToHDF5();
@@ -111,6 +112,10 @@ class Solver {
 
   SolverParameter param_;
   int iter_;
+  //wfz
+  int sal_iter_;
+  int edge_iter_;
+  int iter_size_;
   int current_step_;
   shared_ptr<Net<Dtype> > net_;
   vector<shared_ptr<Net<Dtype> > > test_nets_;

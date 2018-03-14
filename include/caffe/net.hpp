@@ -64,6 +64,7 @@ class Net {
    *        Should be run before Backward.
    */
   void ClearParamDiffs();
+  void UpdateTopDiffs(float weight);
 
   /**
    * The network backward should take no input and output, since it solely
@@ -92,6 +93,7 @@ class Net {
 
   /// @brief Updates the network weights based on the diff values computed.
   void Update();
+  void Update(int);
   /**
    * @brief Shares weight data of owner blobs with shared blobs.
    *
@@ -178,6 +180,9 @@ class Net {
   inline const vector<Blob<Dtype>*>& learnable_params() const {
     return learnable_params_;
   }
+  inline const vector<int>& task_params() const{
+    return task_params_;
+  }
   /// @brief returns the learnable parameter learning rate multipliers
   inline const vector<float>& params_lr() const { return params_lr_; }
   inline const vector<bool>& has_params_lr() const { return has_params_lr_; }
@@ -228,6 +233,7 @@ class Net {
   static bool StateMeetsRule(const NetState& state, const NetStateRule& rule,
       const string& layer_name);
 
+  inline int get_task(){return task_;}
  protected:
   // Helpers for Init.
   /// @brief Append a new top blob to the net.
@@ -249,6 +255,8 @@ class Net {
   /// @brief Helper for displaying debug info in Update.
   void UpdateDebugInfo(const int param_id);
 
+  //wfz
+  int task_;
   /// @brief The network name
   string name_;
   /// @brief The phase: TRAIN or TEST
@@ -285,9 +293,12 @@ class Net {
   vector<int> net_output_blob_indices_;
   vector<Blob<Dtype>*> net_input_blobs_;
   vector<Blob<Dtype>*> net_output_blobs_;
+  vector<int> original_blob_id_;
+  vector<int> edge_loss_blobs_;
   /// The parameters in the network.
   vector<shared_ptr<Blob<Dtype> > > params_;
   vector<Blob<Dtype>*> learnable_params_;
+  vector<int> task_params_;
   /**
    * The mapping from params_ -> learnable_params_: we have
    * learnable_param_ids_.size() == params_.size(),

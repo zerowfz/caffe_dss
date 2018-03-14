@@ -315,7 +315,9 @@ class Layer {
     }
     param_propagate_down_[param_id] = value;
   }
-
+  /*wfz set the task_,and get the task_*/
+  inline int get_task(){return task_;}
+  inline void set_task(int n){task_ = n;}
 
  protected:
   /** The protobuf that stores the layer parameters */
@@ -326,7 +328,8 @@ class Layer {
   vector<shared_ptr<Blob<Dtype> > > blobs_;
   /** Vector indicating whether to compute the diff of each param blob. */
   vector<bool> param_propagate_down_;
-
+  /*wfz: task_ for each layer*/
+  int task_;
   /** The vector that indicates whether each top blob has a non-zero weight in
    *  the objective function. */
   vector<Dtype> loss_;

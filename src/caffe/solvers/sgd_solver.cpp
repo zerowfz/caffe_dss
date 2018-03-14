@@ -61,6 +61,45 @@ Dtype SGDSolver<Dtype>::GetLearningRate() {
   }
   return rate;
 }
+//for iter , different learning rate
+template <typename Dtype>
+Dtype SGDSolver<Dtype>::GetLearningRate(int iter) {
+  Dtype rate;
+  const string& lr_policy = this->param_.lr_policy();
+  if (lr_policy == "fixed") {
+    rate = this->param_.base_lr();
+  } else if (lr_policy == "step") {
+    this->current_step_ = iter / this->param_.stepsize();
+    rate = this->param_.base_lr() *
+        pow(this->param_.gamma(), this->current_step_);
+  } else if (lr_policy == "exp") {
+    rate = this->param_.base_lr() * pow(this->param_.gamma(), iter);
+  } else if (lr_policy == "inv") {
+    rate = this->param_.base_lr() *
+        pow(Dtype(1) + this->param_.gamma() * iter,
+            - this->param_.power());
+  } else if (lr_policy == "multistep") {
+    if (this->current_step_ < this->param_.stepvalue_size() &&
+          iter >= this->param_.stepvalue(this->current_step_)) {
+      this->current_step_++;
+      LOG(INFO) << "MultiStep Status: Iteration " <<
+      iter << ", step = " << this->current_step_;
+    }
+    rate = this->param_.base_lr() *
+        pow(this->param_.gamma(), this->current_step_);
+  } else if (lr_policy == "poly") {
+    rate = this->param_.base_lr() * pow(Dtype(1.) -
+        (Dtype(iter) / Dtype(this->param_.max_iter())),
+        this->param_.power());
+  } else if (lr_policy == "sigmoid") {
+    rate = this->param_.base_lr() * (Dtype(1.) /
+        (Dtype(1.) + exp(-this->param_.gamma() * (Dtype(iter) -
+          Dtype(this->param_.stepsize())))));
+  } else {
+    LOG(FATAL) << "Unknown learning rate policy: " << lr_policy;
+  }
+  return rate;
+}
 
 template <typename Dtype>
 void SGDSolver<Dtype>::PreSolve() {
@@ -116,11 +155,30 @@ void SGDSolver<Dtype>::ApplyUpdate() {
 }
 
 template <typename Dtype>
+void SGDSolver<Dtype>::ApplyUpdate(int iter,int task) {
+  CHECK(Caffe::root_solver());
+  Dtype rate = GetLearningRate(iter);
+  if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
+    LOG(INFO) << "Iteration " << this->iter_ << ", lr = " << rate;
+  }
+  ClipGradients();
+  for (int param_id = 0; param_id < this->net_->learnable_params().size();
+       ++param_id) {
+    if(this->net_->task_params()[param_id]==task){
+    Normalize(param_id);
+    Regularize(param_id);
+    ComputeUpdateValue(param_id, rate);
+  }
+  }
+  this->net_->Update(task);
+}
+
+template <typename Dtype>
 void SGDSolver<Dtype>::Normalize(int param_id) {
-  if (this->param_.iter_size() == 1) { return; }
+  if (this->iter_size_ == 1) { return; }
   // Scale gradient to counterbalance accumulation.
   const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
-  const Dtype accum_normalization = Dtype(1.) / this->param_.iter_size();
+  const Dtype accum_normalization = Dtype(1.) / this->iter_size_;
   switch (Caffe::mode()) {
   case Caffe::CPU: {
     caffe_scal(net_params[param_id]->count(), accum_normalization,

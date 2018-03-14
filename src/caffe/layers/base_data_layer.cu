@@ -41,6 +41,8 @@ void BasePrefetchingLabelmapDataLayer<Dtype>::Forward_gpu(
        top[1]->mutable_gpu_data());
   // Ensure the copy is synchronous wrt the host, so that the next batch isn't
   // copied in meanwhile.
+  //wfz
+  this->task_ = batch->task_;
   CUDA_CHECK(cudaStreamSynchronize(cudaStreamDefault));
   prefetch_free_.push(batch);
 }

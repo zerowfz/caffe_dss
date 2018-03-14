@@ -61,6 +61,8 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
   }
   iter_ = 0;
   current_step_ = 0;
+  sal_iter_=0;
+  edge_iter_=0;
 }
 
 template <typename Dtype>
@@ -197,10 +199,11 @@ void Solver<Dtype>::Step(int iters) {
   int average_loss = this->param_.average_loss();
   losses_.clear();
   smoothed_loss_ = 0;
-
+  float weight = 1;
   while (iter_ < stop_iter) {
     // zero-init the params
-    net_->ClearParamDiffs();
+    //net_->ClearParamDiffs();
+    net_->UpdateTopDiffs(weight);
     if (param_.test_interval() && iter_ % param_.test_interval() == 0
         && (iter_ > 0 || param_.test_initialization())
         && Caffe::root_solver()) {
@@ -218,9 +221,9 @@ void Solver<Dtype>::Step(int iters) {
     net_->set_debug_info(display && param_.debug_info());
     // accumulate the loss and gradient
     Dtype loss = 0;
-    for (int i = 0; i < param_.iter_size(); ++i) {
-      loss += net_->ForwardBackward();
-    }
+    //for (int i = 0; i < param_.iter_size(); ++i) {
+    loss += net_->ForwardBackward();
+    //}
     loss /= param_.iter_size();
     // average the loss across iterations for smoothed reporting
     UpdateSmoothedLoss(loss, start_iter, average_loss);
@@ -250,11 +253,29 @@ void Solver<Dtype>::Step(int iters) {
     for (int i = 0; i < callbacks_.size(); ++i) {
       callbacks_[i]->on_gradients_ready();
     }
-    ApplyUpdate();
+    //wfz
+    //LOG(INFO)<<"sal iter size "<<param_.sal_size();
+    //LOG(INFO)<<"edge iter size"<<param_.edge_size();
+    //LOG(INFO)<<"iter size"<<param_.iter_size();
+    if(net_->get_task()==1){
+	    sal_iter_++;
+	    LOG(INFO)<<"the task of this net is :"<<net_->get_task();
+            if(sal_iter_%param_.sal_size()==0){iter_size_=param_.sal_size();ApplyUpdate(sal_iter_,1);}
+    }
+    else if(net_->get_task()==2){
+	    LOG(INFO)<<"the task of this net is : edge";
+            edge_iter_++;
+            if(edge_iter_%param_.edge_size()==0){
+		    iter_size_=param_.edge_size();
+		    ApplyUpdate(edge_iter_,2);
+	    }
+    }
+    iter_++;
+    if(iter_%param_.iter_size()==0){iter_size_ = param_.iter_size();ApplyUpdate(iter_,0);}
+    //ApplyUpdate();
 
     // Increment the internal iter_ counter -- its value should always indicate
     // the number of times the weights have been updated.
-    ++iter_;
 
     SolverAction::Enum request = GetRequestedAction();
 

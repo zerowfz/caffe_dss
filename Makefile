@@ -34,7 +34,7 @@ LIB_BUILD_DIR := $(BUILD_DIR)/lib
 STATIC_NAME := $(LIB_BUILD_DIR)/lib$(LIBRARY_NAME).a
 DYNAMIC_VERSION_MAJOR 		:= 1
 DYNAMIC_VERSION_MINOR 		:= 0
-DYNAMIC_VERSION_REVISION 	:= 0-rc3
+DYNAMIC_VERSION_REVISION 	:= 0
 DYNAMIC_NAME_SHORT := lib$(LIBRARY_NAME).so
 #DYNAMIC_SONAME_SHORT := $(DYNAMIC_NAME_SHORT).$(DYNAMIC_VERSION_MAJOR)
 DYNAMIC_VERSIONED_NAME_SHORT := $(DYNAMIC_NAME_SHORT).$(DYNAMIC_VERSION_MAJOR).$(DYNAMIC_VERSION_MINOR).$(DYNAMIC_VERSION_REVISION)
@@ -192,12 +192,12 @@ ifeq ($(USE_LMDB), 1)
 	LIBRARIES += lmdb
 endif
 ifeq ($(USE_OPENCV), 1)
-	LIBRARIES += opencv_core opencv_highgui opencv_imgproc 
+	LIBRARIES += opencv_core opencv_highgui opencv_imgproc
 
 	ifeq ($(OPENCV_VERSION), 3)
 		LIBRARIES += opencv_imgcodecs
 	endif
-		
+
 endif
 PYTHON_LIBRARIES ?= boost_python python2.7
 WARNINGS := -Wall -Wno-sign-compare
@@ -328,6 +328,12 @@ ifeq ($(USE_CUDNN), 1)
 	COMMON_FLAGS += -DUSE_CUDNN
 endif
 
+# NCCL acceleration configuration
+ifeq ($(USE_NCCL), 1)
+	LIBRARIES += nccl
+	COMMON_FLAGS += -DUSE_NCCL
+endif
+
 # configure IO libraries
 ifeq ($(USE_OPENCV), 1)
 	COMMON_FLAGS += -DUSE_OPENCV
@@ -385,7 +391,7 @@ else
 		XCODE_CLT_GEQ_7 := $(shell [ $(XCODE_CLT_VER) -gt 6 ] && echo 1)
 		XCODE_CLT_GEQ_6 := $(shell [ $(XCODE_CLT_VER) -gt 5 ] && echo 1)
 		ifeq ($(XCODE_CLT_GEQ_7), 1)
-			BLAS_INCLUDE ?= /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers
+			BLAS_INCLUDE ?= /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$(shell ls /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/ | sort | tail -1)/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers
 		else ifeq ($(XCODE_CLT_GEQ_6), 1)
 			BLAS_INCLUDE ?= /System/Library/Frameworks/Accelerate.framework/Versions/Current/Frameworks/vecLib.framework/Headers/
 			LDFLAGS += -framework Accelerate
@@ -396,9 +402,11 @@ else
 	endif
 endif
 INCLUDE_DIRS += $(BLAS_INCLUDE)
+tem = $(LIB_BUILD_DIR)
 LIBRARY_DIRS += $(BLAS_LIB)
-
-LIBRARY_DIRS += $(LIB_BUILD_DIR)
+tem += $(LIBRARY_DIRS)
+LIBRARY_DIRS := $(tem)
+#LIBRARY_DIRS += $(LIB_BUILD_DIR)
 
 # Automatic dependency generation (nvcc is handled separately)
 CXXFLAGS += -MMD -MP
@@ -525,36 +533,6 @@ $(MAT$(PROJECT)_SO): $(MAT$(PROJECT)_SRC) $(STATIC_NAME)
 runtest: $(TEST_ALL_BIN)
 	$(TOOL_BUILD_DIR)/caffe
 	$(TEST_ALL_BIN) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
-
-TEST_CROSS_ENTROPY = .build_release/test/test_sigmoid_cross_entropy_loss_layer.testbin
-runtest_cross_entropy: $(TEST_ALL_BIN)
-	$(TOOL_BUILD_DIR)/caffe
-	$(TEST_CROSS_ENTROPY) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
-
-TEST_IOU_LOSS = .build_release/test/test_soft_iou_loss_layer.testbin
-runtest_iou_loss: $(TEST_ALL_BIN)
-	$(TOOL_BUILD_DIR)/caffe
-	$(TEST_IOU_LOSS) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
-
-TEST_ROI_POOLING = .build_release/test/test_roi_pooling_layer.testbin
-runtest_roi_pooling: $(TEST_ALL_BIN)
-	$(TOOL_BUILD_DIR)/caffe
-	$(TEST_ROI_POOLING) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
-
-TEST_CWCEL = .build_release/test/test_channel_wise_cross_entropy_loss_layer.testbin
-runtest_cwcel: $(TEST_ALL_BIN)
-	$(TOOL_BUILD_DIR)/caffe
-	$(TEST_CWCEL) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
-
-TEST_CHANNEL_WISE_SCALE = .build_release/test/test_channel_wise_scale_layer.testbin
-runtest_channel_wise_scale: $(TEST_ALL_BIN)
-	$(TOOL_BUILD_DIR)/caffe
-	$(TEST_CHANNEL_WISE_SCALE) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
-
-TEST_SP_LOSS = .build_release/test/test_sp_loss_layer.testbin
-runtest_sp_loss: $(TEST_ALL_BIN)
-	$(TOOL_BUILD_DIR)/caffe
-	$(TEST_SP_LOSS) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
 
 pytest: py
 	cd python; python -m unittest discover -s caffe/test

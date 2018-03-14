@@ -176,7 +176,12 @@ void ImageLabelmapDataLayer<Dtype>::load_batch(LabelmapBatch<Dtype>* batch) {
                                     0, 0, 0);
 
     CHECK(cv_img.data) << "Could not load " << lines_[lines_id_].first;
-
+    //wfz: get the task_
+    if (lines_[lines_id_].first.substr(0,3)==string("edg"))
+	    batch->task_ = 2;
+    else if (lines_[lines_id_].first.substr(0,3)==string("sal"))
+	    batch->task_= 1;
+    else batch->task_ = 0;
     const int height = cv_img.rows;
     const int width = cv_img.cols;
     const int gt_channels = cv_gt.channels();

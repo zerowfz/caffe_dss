@@ -48,7 +48,9 @@ class BaseDataLayer : public Layer<Dtype> {
 template <typename Dtype>
 class LabelmapBatch {
  public:
+	 //wfz : add task_
   Blob<Dtype> data_, labelmap_;
+  int task_;
 };
 
 template <typename Dtype>
