@@ -153,6 +153,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     } else {
       layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);
     }
+    LOG(INFO)<<"SFSFSF";
     LOG_IF(INFO, Caffe::root_solver())
         << "Setting up " << layer_names_[layer_id];
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
@@ -1018,7 +1019,7 @@ void Net<Dtype>::ClearParamDiffs() {
 }
 
 template <typename Dtype>
-void Net<Dtype>::UpdateTopDiffs(float weight) {
+void Net<Dtype>::UpdateTopDiffs() {
   for (int i = 0; i < original_blob_id_.size(); ++i) {
     Blob<Dtype>* blob = blobs_[original_blob_id_[i]].get();
     //LOG(INFO)<<"the blob's diff set 0: "<<blob_names_[original_blob_id_[i]];
@@ -1037,28 +1038,6 @@ void Net<Dtype>::UpdateTopDiffs(float weight) {
       break;
     }
   }
-    if (weight !=1){
-    for (int i = 0; i < edge_loss_blobs_.size(); ++i) {
-    Blob<Dtype>* blob = blobs_[edge_loss_blobs_[i]].get();
-    //LOG(INFO)<<"the blob's diff set weight: "<<blob_names_[edge_loss_blobs_[i]];
-    switch (Caffe::mode()) {
-    case Caffe::CPU:
-      caffe_set(blob->count(), static_cast<Dtype>(weight),
-                blob->mutable_cpu_diff());
-      break;
-    case Caffe::GPU:
-#ifndef CPU_ONLY
-      caffe_gpu_set(blob->count(), static_cast<Dtype>(weight),
-                    blob->mutable_gpu_diff());
-#else
-      NO_GPU;
-#endif
-      break;
-    }
-
-    }
-  }
-
 }
 
 template <typename Dtype>

@@ -1,8 +1,9 @@
-train_net: "multi-2-0.01.prototxt"
+train_net: "./prototxt/multi-2-0.01.prototxt"
 #test_iter:1
 #debug_info: true
 base_lr: 1e-8
 lr_policy: "step"
+#lr_policy: "poly"
 #power: 0.9
 gamma: 0.1
 iter_size: 20
@@ -11,11 +12,12 @@ edge_size: 10
 # stepsize should also be lower, as we're closer to being done
 stepsize: 100000
 max_iter: 300000
-display:1
+#display:1
 momentum: 0.90
 weight_decay: 0.0005
-debug_info: true
-#snapshot: 20000
-#snapshot_prefix: "snapshot1/dss"
+#debug_info: true
+snapshot: 20000
+snapshot_prefix: "result/multi2/9/"
 # uncomment the following to default to CPU mode solving
-# solver_mode: CPU 
+#solver_mode: CPU 
+# weight: (1-iter/iter_size)^0.9

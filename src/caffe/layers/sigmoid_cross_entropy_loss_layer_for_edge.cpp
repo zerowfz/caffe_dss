@@ -34,8 +34,8 @@ void SigmoidCrossEntropyLossForEdgeLayer<Dtype>::Forward_cpu(
   // Compute the loss (negative log likelihood)
   const int count = bottom[0]->count();
   const int num = bottom[0]->num();
-  LOG(INFO)<<"bottom  count mean :"<<count;
-  LOG(INFO)<<"bottom  num  :"<<num;
+  //LOG(INFO)<<"bottom  count mean :"<<count;
+  //LOG(INFO)<<"bottom  num  :"<<num;
   // Stable version of loss computation from input data
   const Dtype* input_data = bottom[0]->cpu_data();
   const Dtype* target = bottom[1]->cpu_data();

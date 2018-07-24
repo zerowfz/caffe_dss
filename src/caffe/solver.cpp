@@ -199,11 +199,10 @@ void Solver<Dtype>::Step(int iters) {
   int average_loss = this->param_.average_loss();
   losses_.clear();
   smoothed_loss_ = 0;
-  float weight = 1;
   while (iter_ < stop_iter) {
     // zero-init the params
     //net_->ClearParamDiffs();
-    net_->UpdateTopDiffs(weight);
+    net_->UpdateTopDiffs();
     if (param_.test_interval() && iter_ % param_.test_interval() == 0
         && (iter_ > 0 || param_.test_initialization())
         && Caffe::root_solver()) {

@@ -64,7 +64,7 @@ class Net {
    *        Should be run before Backward.
    */
   void ClearParamDiffs();
-  void UpdateTopDiffs(float weight);
+  void UpdateTopDiffs();
 
   /**
    * The network backward should take no input and output, since it solely

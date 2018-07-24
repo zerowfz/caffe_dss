@@ -9,14 +9,24 @@ from caffe import NetSpec
 from caffe.net_spec import assign_proto
 
 model = caffe_pb2.NetParameter()
-f = open('multi-2.prototxt','r')
+f = open('./prototxt/global_pooling.prototxt','r')
 text_format.Merge(str(f.read()),model)
-for i in model.layer:
-    if '-conv3' in i.name:
-        i.param[0].lr_mult = 0.01
-        i.param[1].lr_mult = 0.02
+f.close()
+#修改lr_mult
+#for i in model.layer:
+#    if '-conv3' in i.name:
+#        i.param[0].lr_mult = 0.01
+#        i.param[1].lr_mult = 0.02
 
-with open('multi-2-0.01.prototxt','w') as f:
+#删除部分层
+need_dele_layer = []
+for i in model.layer:
+    if 'dsn6' in i.name:
+        need_dele_layer.append(i)
+for i in need_dele_layer:
+    model.layer.remove(i)
+
+with open('./prototxt/global_pooling.prototxt','w') as f:
     f.write(str(model))
 
 '''
